@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文法氣球大挑戰 - 極速版</title>
+    <title>文法氣球大挑戰 - 進化版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Noto+Sans+TC:wght@400;700&display=swap');
@@ -12,7 +12,7 @@
             font-family: 'Noto Sans TC', sans-serif;
             margin: 0;
             overflow: hidden;
-            background: linear-gradient(to bottom, #87CEEB 0%, #E0F7FA 100%);
+            background: linear-gradient(to bottom, #4facfe 0%, #00f2fe 100%);
         }
 
         .game-area {
@@ -21,11 +21,12 @@
             height: 100vh;
         }
 
+        /* 氣球樣式與飄動感 */
         .balloon {
             position: absolute;
-            bottom: -180px;
-            width: 170px;
-            height: 190px;
+            bottom: -220px;
+            width: 180px;
+            height: 200px;
             background: #ff5e5e;
             border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
             display: flex;
@@ -38,29 +39,51 @@
             line-height: 1.3;
             color: white;
             cursor: pointer;
-            box-shadow: inset -10px -10px 20px rgba(0,0,0,0.1);
+            box-shadow: inset -10px -10px 20px rgba(0,0,0,0.1), 0 10px 15px rgba(0,0,0,0.1);
             transition: transform 0.2s, background-color 0.3s;
             z-index: 10;
             word-break: break-word;
+            animation: sway 3s ease-in-out infinite;
         }
+        @keyframes sway {
+            0%, 100% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
+        }
+
         .balloon::after {
             content: '';
             position: absolute;
-            bottom: -20px;
+            bottom: -25px;
             left: 50%;
             width: 2px;
-            height: 30px;
-            background: rgba(255,255,255,0.7);
+            height: 40px;
+            background: rgba(255,255,255,0.6);
         }
 
+        /* 雲朵 */
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.6;
+            filter: blur(2px);
+            animation: moveClouds linear infinite;
+        }
+        @keyframes moveClouds {
+            from { transform: translateX(-300px); }
+            to { transform: translateX(110vw); }
+        }
+
+        /* 氣球掉落動畫 */
         .fall-animation {
             animation: fallIntoTrain 0.6s forwards ease-in;
             pointer-events: none;
         }
         @keyframes fallIntoTrain {
-            to { transform: translateY(600px) scale(0.3); opacity: 0; }
+            to { transform: translateY(700px) scale(0.2) rotate(20deg); opacity: 0; }
         }
 
+        /* 火車與軌道 */
         .train-container {
             position: absolute;
             bottom: 20px;
@@ -70,41 +93,51 @@
             flex-direction: column;
             align-items: center;
             transition: transform 0.3s;
+            z-index: 20;
         }
         .train-carriage {
-            width: 380px;
-            height: 130px;
-            background: #4A4A4A;
-            border-radius: 20px 20px 5px 5px;
-            border: 5px solid #333;
+            width: 400px;
+            height: 140px;
+            background: #333;
+            border-radius: 20px 20px 8px 8px;
+            border: 6px solid #111;
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
         }
         .train-subject {
             background: #FFD700;
-            padding: 10px 25px;
-            border-radius: 12px;
-            font-size: 2.2rem;
+            padding: 12px 30px;
+            border-radius: 15px;
+            font-size: 2.5rem;
             font-weight: 900;
-            color: #333;
+            color: #222;
             text-align: center;
-            box-shadow: inset 0 5px 0 rgba(255,255,255,0.6);
-            min-width: 220px;
+            box-shadow: inset 0 6px 0 rgba(255,255,255,0.6), 0 4px 10px rgba(0,0,0,0.2);
+            min-width: 240px;
         }
         .wheel {
-            width: 45px;
-            height: 45px;
-            background: #222;
+            width: 50px;
+            height: 50px;
+            background: #111;
             border-radius: 50%;
             position: absolute;
-            bottom: -22px;
-            border: 4px solid #444;
+            bottom: -25px;
+            border: 5px solid #444;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { from {transform: rotate(0deg);} to {transform: rotate(360deg);} }
+
+        .rail {
+            position: absolute;
+            bottom: 15px;
+            width: 100%;
+            height: 10px;
+            background: #555;
+            z-index: 5;
+        }
 
         .shake { animation: shakeEffect 0.4s; }
         @keyframes shakeEffect {
@@ -123,58 +156,70 @@
             z-index: 100;
         }
         .stat-card {
-            background: rgba(255,255,255,0.95);
-            padding: 12px 20px;
+            background: rgba(255,255,255,0.9);
+            padding: 12px 25px;
             border-radius: 50px;
             font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            backdrop-filter: blur(5px);
         }
-        .heart { font-size: 1.3rem; margin: 0 1px; }
     </style>
 </head>
 <body>
 
 <div class="game-area" id="gameArea">
+    <!-- 背景裝飾 -->
+    <div class="rail"></div>
+    <div class="cloud" style="width:200px; height:60px; top:10%; left:-200px; animation-duration: 30s;"></div>
+    <div class="cloud" style="width:150px; height:50px; top:25%; left:-150px; animation-duration: 45s; animation-delay: 5s;"></div>
+    <div class="cloud" style="width:250px; height:80px; top:15%; left:-250px; animation-duration: 60s; animation-delay: 15s;"></div>
+
+    <!-- UI 面板 -->
     <div id="ui-panel">
         <div class="stat-card">
-            <span class="text-orange-500">得分: <span id="score">0</span></span>
+            <span class="text-orange-600 text-xl">🏆 <span id="score">0</span></span>
             <span class="text-gray-300">|</span>
-            <span class="text-blue-500">任務: <span id="taskCount">0</span>/2</span>
+            <span class="text-blue-600">🎯 <span id="taskCount">0</span>/2</span>
         </div>
         <div class="stat-card">
-            <span>生命值:</span>
-            <span id="hearts-container" class="flex"></span>
+            <span class="text-red-500 flex" id="hearts-container"></span>
         </div>
     </div>
 
-    <div id="overlay" class="absolute inset-0 z-50 flex items-center justify-center bg-sky-500/95 text-white text-center p-6">
+    <!-- 遊戲覆蓋層 -->
+    <div id="overlay" class="absolute inset-0 z-[200] flex items-center justify-center bg-blue-600/90 text-white text-center p-6">
         <div id="start-content">
-            <h1 class="text-6xl font-black mb-6 drop-shadow-lg">文法氣球大挑戰</h1>
-            <div class="bg-white/20 p-6 rounded-3xl mb-8 backdrop-blur-sm text-left inline-block">
-                <p class="text-xl mb-2 font-bold underline">💡 規則提示：</p>
-                <p class="text-lg">✅ <span class="text-yellow-300">I, you, we, they, Tina and Ben, my brothers</span> ➜ 不加 s</p>
-                <p class="text-lg">✅ <span class="text-yellow-300">he, she, Tina, Ben, my sister</span> ➜ 要加 s/es</p>
+            <h1 class="text-7xl font-black mb-8 drop-shadow-2xl italic">文法進化挑戰</h1>
+            <div class="bg-white/10 p-8 rounded-[40px] mb-10 backdrop-blur-md border border-white/20 text-left inline-block shadow-2xl">
+                <p class="text-2xl mb-4 font-bold text-yellow-300">⚡ 挑戰目標：</p>
+                <ul class="text-xl space-y-2">
+                    <li>✅ <span class="font-bold">I / You / We / They</span> ➜ listen / go / read</li>
+                    <li>✅ <span class="font-bold">He / She / Tina</span> ➜ listens / goes / reads</li>
+                    <li>🕒 <span class="italic text-sky-200">注意句子後面的時間喔！</span></li>
+                </ul>
             </div>
-            <p class="text-xl mb-8">速度會越來越快！按錯 5 次就輸囉！</p>
-            <button onclick="startGame()" class="bg-yellow-400 hover:bg-yellow-500 text-blue-900 font-bold py-5 px-16 rounded-full text-3xl transition-all hover:scale-110 active:scale-95 shadow-2xl">
+            <button onclick="startGame()" class="bg-yellow-400 hover:bg-yellow-500 text-blue-900 font-black py-6 px-20 rounded-full text-4xl transition-all hover:scale-110 active:scale-95 shadow-[0_10px_0_#b8860b] hover:shadow-none">
                 開始發車 🚂
             </button>
         </div>
+        
         <div id="gameover-content" class="hidden">
-            <h1 class="text-6xl font-black mb-6 text-red-400">遊戲結束!</h1>
-            <p class="text-2xl mb-4">別氣餒，再多練習幾次！</p>
-            <p class="text-4xl font-bold mb-8">最終得分：<span id="final-score">0</span></p>
-            <button onclick="startGame()" class="bg-white text-sky-600 font-bold py-5 px-16 rounded-full text-3xl transition-all hover:scale-110 active:scale-95 shadow-2xl">
-                重新挑戰 🔄
+            <h1 class="text-7xl font-black mb-8 text-red-300 drop-shadow-lg">GAME OVER!</h1>
+            <p class="text-3xl mb-10 font-bold">主詞與動詞要再練習一下喔！</p>
+            <div class="text-5xl font-black mb-12 bg-white/20 p-6 rounded-full inline-block">總分：<span id="final-score">0</span></div>
+            <br>
+            <button onclick="startGame()" class="bg-white text-blue-600 font-black py-6 px-16 rounded-full text-3xl transition-all hover:scale-110 active:scale-95 shadow-xl">
+                重新啟航 🔄
             </button>
         </div>
     </div>
 
+    <!-- 火車 -->
     <div class="train-container" id="train">
-        <div class="mb-2 font-bold text-gray-700 bg-white/80 px-4 py-1 rounded-full shadow-sm text-sm">請找出適合的主詞動作</div>
+        <div class="mb-4 font-bold text-white bg-black/60 px-6 py-2 rounded-full shadow-lg backdrop-blur-sm">下一站：主詞車站</div>
         <div class="train-carriage">
             <div id="subjectLabel" class="train-subject">I</div>
             <div class="wheel" style="left: 60px;"></div>
@@ -184,6 +229,44 @@
 </div>
 
 <script>
+    // 音效管理 (使用 Web Audio API)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playSound(type) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        const now = audioCtx.currentTime;
+        
+        if (type === 'correct') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(523.25, now); // C5
+            osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.1); // C6
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+            osc.start(now);
+            osc.stop(now + 0.3);
+        } else if (type === 'wrong') {
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(220, now); // A3
+            osc.frequency.linearRampToValueAtTime(110, now + 0.2); // A2
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+            osc.start(now);
+            osc.stop(now + 0.4);
+        } else if (type === 'gameover') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, now);
+            osc.frequency.linearRampToValueAtTime(50, now + 1);
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 1);
+            osc.start(now);
+            osc.stop(now + 1);
+        }
+    }
+
     const subjects = [
         { text: 'I', type: 'plural' },
         { text: 'you', type: 'plural' },
@@ -198,14 +281,16 @@
         { text: 'my sister', type: 'singular' }
     ];
 
+    // 加入時間變化的動詞庫
     const verbs = [
         { base: 'listen to music on weekends', sForm: 'listens to music on weekends' },
-        { base: 'go to bed at 9', sForm: 'goes to bed at 9' },
-        { base: 'watch TV after school', sForm: 'watches TV after school' },
-        { base: 'do homework', sForm: 'does homework' },
-        { base: 'play basketball', sForm: 'plays basketball' },
-        { base: 'eat breakfast', sForm: 'eats breakfast' },
-        { base: 'get up early', sForm: 'gets up early' }
+        { base: 'go to bed at 9:30', sForm: 'goes to bed at 9:30' },
+        { base: 'read books in my free time', sForm: 'reads books in her free time' },
+        { base: 'play soccer at 4:00', sForm: 'plays soccer at 4:00' },
+        { base: 'watch TV in their free time', sForm: 'watches TV in his free time' },
+        { base: 'eat breakfast at 7:00', sForm: 'eats breakfast at 7:00' },
+        { base: 'get up early on weekends', sForm: 'gets up early on weekends' },
+        { base: 'do homework at 5:00', sForm: 'does homework at 5:00' }
     ];
 
     let score = 0;
@@ -224,14 +309,18 @@
     const heartsContainer = document.getElementById('hearts-container');
 
     function startGame() {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        
         document.getElementById('overlay').classList.add('hidden');
         document.getElementById('start-content').classList.add('hidden');
         document.getElementById('gameover-content').classList.add('hidden');
+        
         score = 0;
         taskCount = 0;
         lives = 5;
         baseSpeed = 8;
         gameActive = true;
+        
         updateUI();
         updateHearts();
         nextSubject();
@@ -247,7 +336,7 @@
         heartsContainer.innerHTML = '';
         for (let i = 0; i < 5; i++) {
             const heart = document.createElement('span');
-            heart.className = 'heart';
+            heart.className = 'heart text-2xl mx-1';
             heart.innerText = i < lives ? '❤️' : '🖤';
             heartsContainer.appendChild(heart);
         }
@@ -258,15 +347,17 @@
         do {
             currentSubjectIndex = Math.floor(Math.random() * subjects.length);
         } while (currentSubjectIndex === lastIndex);
+        
         subjectEl.innerText = subjects[currentSubjectIndex].text;
         taskCount = 0;
         updateUI();
-        startSpawning(); 
+        startSpawning();
     }
 
     function startSpawning() {
         if (spawnTimer) clearInterval(spawnTimer);
-        const interval = Math.max(700, 1800 - (score * 5)); 
+        // 生成頻率隨分數增加而變快
+        const interval = Math.max(700, 2000 - (score * 8)); 
         spawnTimer = setInterval(() => {
             if (gameActive) spawnBalloon();
         }, interval);
@@ -275,20 +366,30 @@
     function spawnBalloon() {
         const balloon = document.createElement('div');
         balloon.className = 'balloon';
-        const colors = ['#FF6B6B', '#4D96FF', '#6BCB77', '#FFD93D', '#9D65C9', '#FF9F43'];
+        
+        const colors = ['#FF6B6B', '#4D96FF', '#6BCB77', '#FFD93D', '#9D65C9', '#FF9F43', '#A18CD1'];
         balloon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        
         const verbPair = verbs[Math.floor(Math.random() * verbs.length)];
         const isSForm = Math.random() > 0.5;
+        
+        // 根據主詞類別動態調整內容
         balloon.innerText = isSForm ? verbPair.sForm : verbPair.base;
         balloon.dataset.isS = isSForm.toString();
-        const startX = 60 + Math.random() * (window.innerWidth - 240);
-        const currentSpeed = Math.max(2.5, baseSpeed - (score / 30));
+        
+        const startX = 80 + Math.random() * (window.innerWidth - 300);
+        
+        // 上升速度隨分數增加
+        const currentSpeed = Math.max(2.2, baseSpeed - (score / 25));
         const duration = currentSpeed + (Math.random() * 2); 
+        
         balloon.style.left = startX + 'px';
         gameArea.appendChild(balloon);
-        let pos = -220;
-        const totalDist = window.innerHeight + 500;
+
+        let pos = -250;
+        const totalDist = window.innerHeight + 550;
         const speed = totalDist / (duration * 60);
+        
         function animate() {
             if (!balloon.parentElement || !gameActive) {
                 balloon.remove();
@@ -296,36 +397,44 @@
             }
             pos += speed;
             balloon.style.bottom = pos + 'px';
-            if (pos > window.innerHeight + 150) {
+            
+            if (pos > window.innerHeight + 200) {
                 balloon.remove();
             } else {
                 requestAnimationFrame(animate);
             }
         }
         requestAnimationFrame(animate);
+
         balloon.onclick = () => handleBalloonClick(balloon);
     }
 
     function handleBalloonClick(balloon) {
         if (!gameActive) return;
+
         const currentSub = subjects[currentSubjectIndex];
         const isS = balloon.dataset.isS === "true";
         const needsS = currentSub.type === 'singular';
+
         if (isS === needsS) {
+            playSound('correct');
             score += 10;
             taskCount++;
             balloon.style.backgroundColor = "#4ADE80";
             balloon.classList.add('fall-animation');
             updateUI();
+
             if (taskCount >= 2) {
                 setTimeout(nextSubject, 600);
             }
         } else {
+            playSound('wrong');
             lives--;
             updateHearts();
             balloon.style.backgroundColor = "#F87171";
             balloon.style.transform = "scale(0.8)";
             train.classList.add('shake');
+            
             if (lives <= 0) {
                 gameOver();
             } else {
@@ -339,13 +448,16 @@
 
     function gameOver() {
         gameActive = false;
+        playSound('gameover');
         clearInterval(spawnTimer);
         document.getElementById('final-score').innerText = score;
         document.getElementById('overlay').classList.remove('hidden');
         document.getElementById('gameover-content').classList.remove('hidden');
+        
         const balloons = document.querySelectorAll('.balloon');
         balloons.forEach(b => b.remove());
     }
 </script>
+
 </body>
 </html>

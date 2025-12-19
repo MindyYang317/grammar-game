@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文法氣球大挑戰 - 極速版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Noto+Sans+TC:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F7FA 100%);
+        }
+
+        .game-area {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .balloon {
+            position: absolute;
+            bottom: -180px;
+            width: 170px;
+            height: 190px;
+            background: #ff5e5e;
+            border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            line-height: 1.3;
+            color: white;
+            cursor: pointer;
+            box-shadow: inset -10px -10px 20px rgba(0,0,0,0.1);
+            transition: transform 0.2s, background-color 0.3s;
+            z-index: 10;
+            word-break: break-word;
+        }
+        .balloon::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            width: 2px;
+            height: 30px;
+            background: rgba(255,255,255,0.7);
+        }
+
+        .fall-animation {
+            animation: fallIntoTrain 0.6s forwards ease-in;
+            pointer-events: none;
+        }
+        @keyframes fallIntoTrain {
+            to { transform: translateY(600px) scale(0.3); opacity: 0; }
+        }
+
+        .train-container {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.3s;
+        }
+        .train-carriage {
+            width: 380px;
+            height: 130px;
+            background: #4A4A4A;
+            border-radius: 20px 20px 5px 5px;
+            border: 5px solid #333;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .train-subject {
+            background: #FFD700;
+            padding: 10px 25px;
+            border-radius: 12px;
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #333;
+            text-align: center;
+            box-shadow: inset 0 5px 0 rgba(255,255,255,0.6);
+            min-width: 220px;
+        }
+        .wheel {
+            width: 45px;
+            height: 45px;
+            background: #222;
+            border-radius: 50%;
+            position: absolute;
+            bottom: -22px;
+            border: 4px solid #444;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { from {transform: rotate(0deg);} to {transform: rotate(360deg);} }
+
+        .shake { animation: shakeEffect 0.4s; }
+        @keyframes shakeEffect {
+            0%, 100% { transform: translateX(-50%); }
+            20%, 60% { transform: translateX(-55%); }
+            40%, 80% { transform: translateX(-45%); }
+        }
+
+        #ui-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 100;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.95);
+            padding: 12px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .heart { font-size: 1.3rem; margin: 0 1px; }
+    </style>
+</head>
+<body>
+
+<div class="game-area" id="gameArea">
+    <div id="ui-panel">
+        <div class="stat-card">
+            <span class="text-orange-500">得分: <span id="score">0</span></span>
+            <span class="text-gray-300">|</span>
+            <span class="text-blue-500">任務: <span id="taskCount">0</span>/2</span>
+        </div>
+        <div class="stat-card">
+            <span>生命值:</span>
+            <span id="hearts-container" class="flex"></span>
+        </div>
+    </div>
+
+    <div id="overlay" class="absolute inset-0 z-50 flex items-center justify-center bg-sky-500/95 text-white text-center p-6">
+        <div id="start-content">
+            <h1 class="text-6xl font-black mb-6 drop-shadow-lg">文法氣球大挑戰</h1>
+            <div class="bg-white/20 p-6 rounded-3xl mb-8 backdrop-blur-sm text-left inline-block">
+                <p class="text-xl mb-2 font-bold underline">💡 規則提示：</p>
+                <p class="text-lg">✅ <span class="text-yellow-300">I, you, we, they, Tina and Ben, my brothers</span> ➜ 不加 s</p>
+                <p class="text-lg">✅ <span class="text-yellow-300">he, she, Tina, Ben, my sister</span> ➜ 要加 s/es</p>
+            </div>
+            <p class="text-xl mb-8">速度會越來越快！按錯 5 次就輸囉！</p>
+            <button onclick="startGame()" class="bg-yellow-400 hover:bg-yellow-500 text-blue-900 font-bold py-5 px-16 rounded-full text-3xl transition-all hover:scale-110 active:scale-95 shadow-2xl">
+                開始發車 🚂
+            </button>
+        </div>
+        <div id="gameover-content" class="hidden">
+            <h1 class="text-6xl font-black mb-6 text-red-400">遊戲結束!</h1>
+            <p class="text-2xl mb-4">別氣餒，再多練習幾次！</p>
+            <p class="text-4xl font-bold mb-8">最終得分：<span id="final-score">0</span></p>
+            <button onclick="startGame()" class="bg-white text-sky-600 font-bold py-5 px-16 rounded-full text-3xl transition-all hover:scale-110 active:scale-95 shadow-2xl">
+                重新挑戰 🔄
+            </button>
+        </div>
+    </div>
+
+    <div class="train-container" id="train">
+        <div class="mb-2 font-bold text-gray-700 bg-white/80 px-4 py-1 rounded-full shadow-sm text-sm">請找出適合的主詞動作</div>
+        <div class="train-carriage">
+            <div id="subjectLabel" class="train-subject">I</div>
+            <div class="wheel" style="left: 60px;"></div>
+            <div class="wheel" style="right: 60px;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const subjects = [
+        { text: 'I', type: 'plural' },
+        { text: 'you', type: 'plural' },
+        { text: 'we', type: 'plural' },
+        { text: 'they', type: 'plural' },
+        { text: 'Tina and Ben', type: 'plural' },
+        { text: 'my brothers', type: 'plural' },
+        { text: 'he', type: 'singular' },
+        { text: 'she', type: 'singular' },
+        { text: 'Tina', type: 'singular' },
+        { text: 'Ben', type: 'singular' },
+        { text: 'my sister', type: 'singular' }
+    ];
+
+    const verbs = [
+        { base: 'listen to music on weekends', sForm: 'listens to music on weekends' },
+        { base: 'go to bed at 9', sForm: 'goes to bed at 9' },
+        { base: 'watch TV after school', sForm: 'watches TV after school' },
+        { base: 'do homework', sForm: 'does homework' },
+        { base: 'play basketball', sForm: 'plays basketball' },
+        { base: 'eat breakfast', sForm: 'eats breakfast' },
+        { base: 'get up early', sForm: 'gets up early' }
+    ];
+
+    let score = 0;
+    let taskCount = 0;
+    let currentSubjectIndex = 0;
+    let gameActive = false;
+    let spawnTimer;
+    let lives = 5;
+    let baseSpeed = 8; 
+
+    const gameArea = document.getElementById('gameArea');
+    const scoreEl = document.getElementById('score');
+    const taskEl = document.getElementById('taskCount');
+    const subjectEl = document.getElementById('subjectLabel');
+    const train = document.getElementById('train');
+    const heartsContainer = document.getElementById('hearts-container');
+
+    function startGame() {
+        document.getElementById('overlay').classList.add('hidden');
+        document.getElementById('start-content').classList.add('hidden');
+        document.getElementById('gameover-content').classList.add('hidden');
+        score = 0;
+        taskCount = 0;
+        lives = 5;
+        baseSpeed = 8;
+        gameActive = true;
+        updateUI();
+        updateHearts();
+        nextSubject();
+        startSpawning();
+    }
+
+    function updateUI() {
+        scoreEl.innerText = score;
+        taskEl.innerText = taskCount;
+    }
+
+    function updateHearts() {
+        heartsContainer.innerHTML = '';
+        for (let i = 0; i < 5; i++) {
+            const heart = document.createElement('span');
+            heart.className = 'heart';
+            heart.innerText = i < lives ? '❤️' : '🖤';
+            heartsContainer.appendChild(heart);
+        }
+    }
+
+    function nextSubject() {
+        const lastIndex = currentSubjectIndex;
+        do {
+            currentSubjectIndex = Math.floor(Math.random() * subjects.length);
+        } while (currentSubjectIndex === lastIndex);
+        subjectEl.innerText = subjects[currentSubjectIndex].text;
+        taskCount = 0;
+        updateUI();
+        startSpawning(); 
+    }
+
+    function startSpawning() {
+        if (spawnTimer) clearInterval(spawnTimer);
+        const interval = Math.max(700, 1800 - (score * 5)); 
+        spawnTimer = setInterval(() => {
+            if (gameActive) spawnBalloon();
+        }, interval);
+    }
+
+    function spawnBalloon() {
+        const balloon = document.createElement('div');
+        balloon.className = 'balloon';
+        const colors = ['#FF6B6B', '#4D96FF', '#6BCB77', '#FFD93D', '#9D65C9', '#FF9F43'];
+        balloon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        const verbPair = verbs[Math.floor(Math.random() * verbs.length)];
+        const isSForm = Math.random() > 0.5;
+        balloon.innerText = isSForm ? verbPair.sForm : verbPair.base;
+        balloon.dataset.isS = isSForm.toString();
+        const startX = 60 + Math.random() * (window.innerWidth - 240);
+        const currentSpeed = Math.max(2.5, baseSpeed - (score / 30));
+        const duration = currentSpeed + (Math.random() * 2); 
+        balloon.style.left = startX + 'px';
+        gameArea.appendChild(balloon);
+        let pos = -220;
+        const totalDist = window.innerHeight + 500;
+        const speed = totalDist / (duration * 60);
+        function animate() {
+            if (!balloon.parentElement || !gameActive) {
+                balloon.remove();
+                return;
+            }
+            pos += speed;
+            balloon.style.bottom = pos + 'px';
+            if (pos > window.innerHeight + 150) {
+                balloon.remove();
+            } else {
+                requestAnimationFrame(animate);
+            }
+        }
+        requestAnimationFrame(animate);
+        balloon.onclick = () => handleBalloonClick(balloon);
+    }
+
+    function handleBalloonClick(balloon) {
+        if (!gameActive) return;
+        const currentSub = subjects[currentSubjectIndex];
+        const isS = balloon.dataset.isS === "true";
+        const needsS = currentSub.type === 'singular';
+        if (isS === needsS) {
+            score += 10;
+            taskCount++;
+            balloon.style.backgroundColor = "#4ADE80";
+            balloon.classList.add('fall-animation');
+            updateUI();
+            if (taskCount >= 2) {
+                setTimeout(nextSubject, 600);
+            }
+        } else {
+            lives--;
+            updateHearts();
+            balloon.style.backgroundColor = "#F87171";
+            balloon.style.transform = "scale(0.8)";
+            train.classList.add('shake');
+            if (lives <= 0) {
+                gameOver();
+            } else {
+                setTimeout(() => {
+                    balloon.remove();
+                    train.classList.remove('shake');
+                }, 400);
+            }
+        }
+    }
+
+    function gameOver() {
+        gameActive = false;
+        clearInterval(spawnTimer);
+        document.getElementById('final-score').innerText = score;
+        document.getElementById('overlay').classList.remove('hidden');
+        document.getElementById('gameover-content').classList.remove('hidden');
+        const balloons = document.querySelectorAll('.balloon');
+        balloons.forEach(b => b.remove());
+    }
+</script>
+</body>
+</html>
